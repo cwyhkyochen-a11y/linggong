@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集团数字化底座 - TodoBoard</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--s1:#111113;--s2:#18181b;--s3:#27272a;--s4:#3f3f46;
+  --b1:#27272a;--b2:#3f3f46;--b3:#52525b;
+  --t1:#fafafa;--t2:#a1a1aa;--t3:#71717a;--t4:#52525b;
+  --acc:#818cf8;--acc2:#6366f1;--grn:#34d399;--ylw:#fbbf24;--red:#f87171;--pur:#a78bfa;--cyan:#22d3ee;
+  --r:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",system-ui,sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.hero{padding:120px 24px 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 50% 0%,rgba(99,102,241,.08) 0%,transparent 60%);pointer-events:none}
+.hero-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.5px;background:rgba(129,140,248,.1);color:var(--acc);border:1px solid rgba(129,140,248,.2);margin-bottom:24px}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-1.5px;line-height:1.15;margin-bottom:16px}
+.hero h1 span{background:linear-gradient(135deg,var(--acc),var(--pur));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--t2);max-width:640px;margin:0 auto 32px;line-height:1.7}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--acc2);color:#fff}
+.btn-primary:hover{background:var(--acc);transform:translateY(-1px);text-decoration:none}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--b2)}
+.btn-ghost:hover{border-color:var(--b3);color:var(--t1);text-decoration:none}
+
+.section{padding:80px 24px;max-width:1100px;margin:0 auto}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px}
+.section h2{font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-.5px;margin-bottom:12px}
+.section-desc{font-size:16px;color:var(--t2);max-width:640px;margin-bottom:48px}
+
+.flow{display:flex;flex-direction:column;gap:24px}
+.flow-step{display:flex;gap:24px;align-items:flex-start}
+.flow-num{width:56px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;background:var(--s2);border:1px solid var(--b2);color:var(--t3)}
+.flow-content h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.flow-content p{font-size:14px;color:var(--t2);line-height:1.6}
+.flow-arrow{width:56px;display:flex;justify-content:center;color:var(--t4);font-size:16px;padding:4px 0}
+
+.sys-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.sys-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:28px;transition:all .2s;position:relative;overflow:hidden}
+.sys-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.sys-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sys-card:nth-child(1)::before{background:var(--acc)}
+.sys-card:nth-child(2)::before{background:var(--grn)}
+.sys-card:nth-child(3)::before{background:var(--ylw)}
+.sys-card:nth-child(4)::before{background:var(--pur)}
+.sys-card:nth-child(5)::before{background:var(--cyan)}
+.sys-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.sys-card p{font-size:13.5px;color:var(--t2);line-height:1.6;margin-bottom:16px}
+.sys-tags{display:flex;flex-wrap:wrap;gap:6px}
+.sys-tag{font-size:11px;padding:2px 10px;border-radius:12px;background:var(--s2);border:1px solid var(--b1);color:var(--t3)}
+
+/* Architecture Diagram */
+.arch{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:40px 32px;overflow-x:auto}
+.arch-layers{display:flex;flex-direction:column;gap:0;min-width:700px}
+.arch-layer{display:flex;align-items:stretch;gap:0;padding:12px 0}
+.arch-label{width:100px;flex-shrink:0;display:flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t4);padding:8px 0}
+.arch-boxes{flex:1;display:flex;gap:10px}
+.arch-box{flex:1;min-width:100px;padding:12px 14px;border-radius:8px;text-align:center;font-size:12.5px;font-weight:600;border:1px solid;background:transparent}
+.arch-box .sub{display:block;font-size:10.5px;font-weight:400;margin-top:3px}
+.arch-box.ai{border-color:rgba(129,140,248,.25);color:var(--acc)}
+.arch-box.ai .sub{color:rgba(129,140,248,.5)}
+.arch-box.org{border-color:rgba(52,211,153,.25);color:var(--grn)}
+.arch-box.org .sub{color:rgba(52,211,153,.5)}
+.arch-box.proj{border-color:rgba(251,191,36,.25);color:var(--ylw)}
+.arch-box.proj .sub{color:rgba(251,191,36,.5)}
+.arch-box.meet{border-color:rgba(167,139,250,.25);color:var(--pur)}
+.arch-box.meet .sub{color:rgba(167,139,250,.5)}
+.arch-box.report{border-color:rgba(34,211,238,.25);color:var(--cyan)}
+.arch-box.report .sub{color:rgba(34,211,238,.5)}
+.arch-box.notify{border-color:rgba(248,113,113,.25);color:var(--red)}
+.arch-box.db{border-color:rgba(99,102,241,.25);color:var(--acc2)}
+.arch-box.db .sub{color:rgba(99,102,241,.5)}
+.arch-box.user{border-color:rgba(161,161,170,.2);color:var(--t2)}
+.arch-box.user .sub{color:var(--t4)}
+.arch-divider{display:flex;align-items:center;padding:6px 0;position:relative}
+.arch-divider::before{content:'';position:absolute;left:100px;right:0;top:50%;height:1px;background:var(--b1)}
+.arch-divider span{position:relative;z-index:1;padding:4px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:var(--s1);color:var(--t3);border:1px solid var(--b1);border-radius:4px;margin-left:100px}
+
+.arch-flow-note{margin-top:28px;padding:20px 24px;background:var(--s2);border-radius:8px;border:1px solid var(--b1)}
+.arch-flow-note h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-bottom:14px}
+.arch-flow-list{list-style:none;font-size:12.5px;color:var(--t2)}
+.arch-flow-list li{padding:5px 0;display:flex;align-items:center;gap:8px}
+.arch-flow-list .src{font-weight:600;min-width:70px;text-align:right}
+.arch-flow-list .src.proj{color:var(--ylw)}
+.arch-flow-list .src.meet{color:var(--pur)}
+.arch-flow-list .src.report{color:var(--cyan)}
+.arch-flow-list .src.all{color:var(--t3)}
+.arch-flow-list .dst{font-weight:600;min-width:90px}
+.arch-flow-list .dst.proj{color:var(--ylw)}
+.arch-flow-list .dst.hr{color:var(--grn)}
+.arch-flow-list .dst.wiki{color:var(--ylw)}
+.arch-flow-list .dst.report{color:var(--cyan)}
+.arch-flow-list .sep{color:var(--t4);font-size:11px}
+.arch-flow-list .act{color:var(--t3)}
+
+/* Use Cases */
+.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
+.uc-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:24px;transition:all .2s}
+.uc-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.uc-role{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:var(--s2);border:1px solid var(--b1);color:var(--t3);margin-bottom:12px}
+.uc-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.uc-card p{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px}
+.uc-flow{padding:12px;background:var(--s2);border-radius:8px;font-size:12px;color:var(--t3);line-height:1.6}
+.uc-flow strong{color:var(--t2);font-weight:600}
+.uc-flow .arrow{color:var(--acc)}
+
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.skill-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:20px}
+.skill-card h4{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--t1)}
+.skill-card .skill-name{font-size:12px;color:var(--acc);margin-bottom:8px}
+.skill-card p{font-size:12.5px;color:var(--t3);line-height:1.5}
+.skill-example{margin-top:10px;padding:10px;background:var(--s2);border-radius:6px;font-size:12px;color:var(--t2);font-style:italic;line-height:1.5}
+
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tech-item{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:16px}
+.tech-item .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t4);margin-bottom:4px}
+.tech-item .value{font-size:14px;font-weight:600}
+
+.boundary{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px}
+.boundary-col h3{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b1)}
+.boundary-col.do h3{color:var(--grn)}
+.boundary-col.no h3{color:var(--red)}
+.boundary-list{list-style:none;font-size:13.5px;color:var(--t2)}
+.boundary-list li{padding:6px 0;display:flex;align-items:center;gap:8px}
+.boundary-list li::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.boundary-col.do .boundary-list li::before{background:var(--grn)}
+.boundary-col.no .boundary-list li::before{background:var(--red)}
+
+.footer{padding:48px 24px;text-align:center;border-top:1px solid var(--b1);margin-top:80px}
+.footer p{font-size:13px;color:var(--t4)}
+
+@media(max-width:768px){
+  .hero{padding:80px 20px 60px}
+  .sys-grid,.uc-grid{grid-template-columns:1fr}
+  .boundary{grid-template-columns:1fr}
+  .arch{padding:24px 16px}
+  .arch-label{width:60px;font-size:8px}
+  .arch-divider span{margin-left:60px}
+  .arch-divider::before{left:60px}
+  .arch-flow-list .src{min-width:50px}
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">OpenClaw x TodoBoard</div>
+  <h1>集团<span>数字化底座</span></h1>
+  <p>六个子系统 + 一套生产力工具，AI 对话替代传统管理后台。<br>项目、会议、日报、评估、人资、AI 基础设施，加日常提效工具，一个平台串起来。</p>
+  <div class="hero-actions">
+    <a href="#systems" class="btn btn-primary">了解五大系统</a>
+    <a href="https://github.com/cwyhkyochen-a11y/todo-board" class="btn btn-ghost" target="_blank">GitHub</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">为什么</div>
+  <h2>换个方式管集团</h2>
+  <div class="section-desc">3000 人的集团,日常依赖五件事:做事、开会、写报告、管人、用 AI。现在这些事散落在各种工具里,数据不通,人要来回切换。</div>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">传统</div>
+      <div class="flow-content">
+        <h3>人 - 找按钮 - 系统</h3>
+        <p>打开管理页面,搜索功能,填表单,保存,切到下一个工具。学习成本高,效率低。</p>
+      </div>
+    </div>
+    <div class="flow-arrow">|</div>
+    <div class="flow-step">
+      <div class="flow-num">我们</div>
+      <div class="flow-content">
+        <h3>人 - 说人话 - AI - 系统</h3>
+        <p>跟 AI 说"建个项目叫 Q2 营销,把市场部的人都加进去",AI 操作系统,人只看结果。没有管理后台,没有表单,没有按钮。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="systems">
+  <div class="section-label">六大系统</div>
+  <h2>各司其职，数据互通</h2>
+  <div class="section-desc">每个系统管一件事，系统之间通过数据流串联成闭环。</div>
+  <div class="sys-grid">
+    <div class="sys-card">
+      <h3>AI Infra 平台</h3>
+      <p>AI 的"水电煤"。管理 Skill、API Key、Model 配置、用量统计、安全审计。让业务系统只管调用,不管底层。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">Skill 管理</span>
+        <span class="sys-tag">Key 管理</span>
+        <span class="sys-tag">用量统计</span>
+        <span class="sys-tag">安全审计</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>人才评估系统</h3>
+      <p>评估工具的创建、分发、回收、汇总。评估本身是项目待办,通过 Skill 推送和定期提醒驱动员工完成,结果自动汇入人资画像。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">评估模板</span>
+        <span class="sys-tag">项目式分发</span>
+        <span class="sys-tag">定期提醒</span>
+        <span class="sys-tag">结果汇总</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>人资画像平台</h3>
+      <p>每个人的“数字档案”。员工主数据 + 评估档案 + 绩效参考。数据从项目、会议、日报、评估自动汇聚，不是正式绩效评估，是事实数据。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">员工主数据</span>
+        <span class="sys-tag">评估档案</span>
+        <span class="sys-tag">绩效参考</span>
+        <span class="sys-tag">人才盘点</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>项目档案平台</h3>
+      <p>做事的地方。项目主档 + 三栏看板 + Wiki 文档空间。任务管理从 v1 升级,Wiki 支持会议纪要自动归档。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">项目管理</span>
+        <span class="sys-tag">任务看板</span>
+        <span class="sys-tag">Wiki 文档</span>
+        <span class="sys-tag">成员管理</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>会议平台</h3>
+      <p>AI 先判断"有没有必要开会",过滤无效会议。有必要才创建,自动填目的/议题,预订会议室,生成纪要,待办转入项目。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">AI 判断</span>
+        <span class="sys-tag">自动创建</span>
+        <span class="sys-tag">纪要生成</span>
+        <span class="sys-tag">企微集成</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>日报平台</h3>
+      <p>日报/周报/月报,自动生成 + 手动补充。日报反向更新项目任务,数据汇聚到员工画像。周报月报自动聚合。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">自动日报</span>
+        <span class="sys-tag">反向更新</span>
+        <span class="sys-tag">周报月报</span>
+        <span class="sys-tag">员工画像</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Productivity Tools -->
+<section class="section">
+  <div class="section-label">生产力工具</div>
+  <h2>日常提效，项目产出</h2>
+  <div class="section-desc">员工每天用的 AI 工具，所有产出都挂到项目上。没有一个员工手上的事跟项目无关。</div>
+  <div class="sys-grid">
+    <div class="sys-card">
+      <h3>数据分析</h3>
+      <p>上传 Excel/CSV，AI 出分析报告、生成图表、找异常值。销售数据、运营数据、用户数据，丢进去就能看。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">Excel 分析</span>
+        <span class="sys-tag">图表生成</span>
+        <span class="sys-tag">异常检测</span>
+        <span class="sys-tag">趋势洞察</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>调研助手</h3>
+      <p>告诉 AI 要调研什么，它帮你搜、整理、出报告。竞品分析、市场调研、技术选型，从散落的信息到结构化文档。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">竞品分析</span>
+        <span class="sys-tag">市场调研</span>
+        <span class="sys-tag">技术选型</span>
+        <span class="sys-tag">信息整理</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>文档产出</h3>
+      <p>写方案、写报告、写总结。AI 出初稿，人改细节。从口述到成稿，从草稿到排版，一个对话搞定。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">方案撰写</span>
+        <span class="sys-tag">报告生成</span>
+        <span class="sys-tag">文档润色</span>
+        <span class="sys-tag">格式排版</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>PPT 生成</h3>
+      <p>给 AI 一份演讲稿或大纲，自动生成幻灯片。支持自定义风格、配色、版式，从文字到演示一步到位。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">演讲稿转 PPT</span>
+        <span class="sys-tag">模板套用</span>
+        <span class="sys-tag">风格定制</span>
+        <span class="sys-tag">一键导出</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>表格处理</h3>
+      <p>数据清洗、格式转换、批量处理、公式生成。不用写 Excel 公式，跟 AI 说你要什么结果。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">数据清洗</span>
+        <span class="sys-tag">批量处理</span>
+        <span class="sys-tag">公式生成</span>
+        <span class="sys-tag">格式转换</span>
+      </div>
+    </div>
+    <div class="sys-card">
+      <h3>代码辅助</h3>
+      <p>技术团队专属。代码生成、Review、调试、文档生成。接项目代码仓库，上下文感知。</p>
+      <div class="sys-tags">
+        <span class="sys-tag">代码生成</span>
+        <span class="sys-tag">Code Review</span>
+        <span class="sys-tag">调试助手</span>
+        <span class="sys-tag">API 文档</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section class="section">
+  <div class="section-label">系统架构</div>
+  <h2>分层架构与数据流</h2>
+  <div class="section-desc">五层架构,数据自下而上流动,事件驱动串联。</div>
+  <div class="arch">
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <div class="arch-label">用户层</div>
+        <div class="arch-boxes">
+          <div class="arch-box user">管理员<span class="sub">CTO / VP</span></div>
+          <div class="arch-box user">部门负责人<span class="sub">总监</span></div>
+          <div class="arch-box user">项目经理<span class="sub">PM</span></div>
+          <div class="arch-box user">普通成员<span class="sub">一线员工</span></div>
+          <div class="arch-box user">HR<span class="sub">人力经理</span></div>
+        </div>
+      </div>
+
+      <div class="arch-divider"><span>生产力工具层（日常提效）</span></div>
+
+      <div class="arch-layer">
+        <div class="arch-label">工具 Skill</div>
+        <div class="arch-boxes">
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">数据分析</div>
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">调研助手</div>
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">文档产出</div>
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">PPT 生成</div>
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">表格处理</div>
+          <div class="arch-box" style="border-color:rgba(251,146,60,.25);color:#fb923c">代码辅助</div>
+        </div>
+      </div>
+
+      <div class="arch-divider"><span>OpenClaw / Skill 层</span></div>
+
+      <div class="arch-layer">
+        <div class="arch-label">AI 基础设施</div>
+        <div class="arch-boxes">
+          <div class="arch-box ai">Skill 注册中心</div>
+          <div class="arch-box ai">模型路由</div>
+          <div class="arch-box ai">密钥与配额</div>
+          <div class="arch-box ai">用量计费</div>
+          <div class="arch-box ai">安全审计</div>
+        </div>
+      </div>
+
+      <div class="arch-divider"><span>API Gateway</span></div>
+
+      <div class="arch-layer">
+        <div class="arch-label">业务系统</div>
+        <div class="arch-boxes">
+          <div class="arch-box org">组织与人员<span class="sub">部门树 / 主数据</span></div>
+          <div class="arch-box proj">项目档案<span class="sub">看板 / 任务 / Wiki</span></div>
+          <div class="arch-box meet">会议管理<span class="sub">判断 / 纪要 / 待办</span></div>
+          <div class="arch-box report">日报平台<span class="sub">日报 / 周报 / 月报</span></div>
+          <div class="arch-box ai" style="border-color:rgba(251,146,60,.25);color:#fb923c">人才评估<span class="sub" style="color:rgba(251,146,60,.5)">模板 / 分发 / 回收</span></div>
+        </div>
+      </div>
+
+      <div class="arch-divider"><span>Event Bus</span></div>
+
+      <div class="arch-layer">
+        <div class="arch-label">通知层</div>
+        <div class="arch-boxes">
+          <div class="arch-box notify">飞书消息</div>
+          <div class="arch-box notify">企微消息</div>
+          <div class="arch-box notify">定时推送</div>
+          <div class="arch-box notify">站内通知</div>
+        </div>
+      </div>
+
+      <div class="arch-divider"><span>Persistence</span></div>
+
+      <div class="arch-layer">
+        <div class="arch-label">数据层</div>
+        <div class="arch-boxes">
+          <div class="arch-box db">MySQL 8.0<span class="sub">统一数据底座</span></div>
+          <div class="arch-box db">Prisma ORM<span class="sub">Schema / Migration</span></div>
+          <div class="arch-box db">Redis<span class="sub">Session / Cache</span></div>
+          <div class="arch-box db">对象存储<span class="sub">文件附件</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-flow-note">
+      <h4>数据流映射(事件驱动)</h4>
+      <ul class="arch-flow-list">
+        <li><span class="src proj">项目</span> <span class="sep">--></span> <span class="dst report">日报</span> <span class="act">任务变更自动填充日报草稿</span></li>
+        <li><span class="src proj">项目</span> <span class="sep">--></span> <span class="dst hr">人资画像</span> <span class="act">任务完成更新交付量、按时率</span></li>
+        <li><span class="src report">日报</span> <span class="sep">--></span> <span class="dst proj">项目</span> <span class="act">"完成了 XX" 反向更新任务状态</span></li>
+        <li><span class="src report">日报</span> <span class="sep">--></span> <span class="dst hr">人资画像</span> <span class="act">更新响应速度、自驱任务占比</span></li>
+        <li><span class="src meet">会议</span> <span class="sep">--></span> <span class="dst proj">项目</span> <span class="act">会议决议自动生成待办任务</span></li>
+        <li><span class="src meet">会议</span> <span class="sep">--></span> <span class="dst wiki">项目 Wiki</span> <span class="act">纪要自动归档到项目文档</span></li>
+        <li><span class="src meet">会议</span> <span class="sep">--></span> <span class="dst hr">人资画像</span> <span class="act">更新参与度、同行评价</span></li>
+        <li><span class="src" style="color:#fb923c">评估</span> <span class="sep">--></span> <span class="dst hr">人资画像</span> <span class="act">评估结果自动写入员工档案</span></li>
+        <li><span class="src" style="color:#fb923c">评估</span> <span class="sep">--></span> <span class="dst proj">项目</span> <span class="act">评估任务作为项目待办分发和追踪</span></li>
+        <li><span class="src" style="color:#fb923c">工具</span> <span class="sep">--></span> <span class="dst proj">项目</span> <span class="act">调研/分析/PPT/文档产出挂到项目交付物</span></li>
+        <li><span class="src" style="color:#fb923c">工具</span> <span class="sep">--></span> <span class="dst report">日报</span> <span class="act">工具使用记录自动填充今日工作</span></li>
+        <li><span class="src all">全部</span> <span class="sep">--></span> <span class="dst hr">人资画像</span> <span class="act">周期性 AI 汇聚生成评估摘要</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Use Cases -->
+<section class="section">
+  <div class="section-label">用户场景</div>
+  <h2>真实工作流,AI 全程串联</h2>
+  <div class="section-desc">10 个典型场景,覆盖从项目启动到人才盘点的完整链路。</div>
+  <div class="uc-grid">
+    <div class="uc-card">
+      <span class="uc-role">部门负责人</span>
+      <h3>新项目启动</h3>
+      <p>李总监听说 Q2 要做营销活动,跟 AI 说一句,项目、成员、任务一次到位。</p>
+      <div class="uc-flow">
+        <strong>"建个项目叫 Q2 品牌营销,小王当 PM,拉市场部和技术部的人"</strong><br>
+        --> AI 创建项目 + 添加成员 + 拆解任务 + 通知所有人
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">普通成员</span>
+      <h3>日常任务推进</h3>
+      <p>小陈上班第一件事:问 AI 今天干什么。任务、提醒、日报,一个对话搞定。</p>
+      <div class="uc-flow">
+        <strong>"今天有什么要做的?"</strong><br>
+        --> AI 列出待办 + 高优提醒 + "昨天日报没写,要生成吗?"
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">项目经理</span>
+      <h3>会议判断与发起</h3>
+      <p>小王想开会讨论方案,AI 先判断有没有必要,再自动填目的、议题、订会议室。</p>
+      <div class="uc-flow">
+        <strong>"方案要不要开会讨论?市场部和技术部有分歧"</strong><br>
+        --> AI: "有必要,建议 4 人参会,30 分钟决策会。发吗?"<br>
+        --> "发吧" --> 预订会议室 + 发邀请 + 附上方案文档
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">项目经理</span>
+      <h3>会后纪要与任务转入</h3>
+      <p>会开完了,AI 自动生成纪要,决议和待办直接转入项目看板,不用手动抄。</p>
+      <div class="uc-flow">
+        <strong>"会开完了,帮我整理一下"</strong><br>
+        --> AI 生成纪要 + 提取决议 + 创建待办 + 归档 Wiki + 通知参会人
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">普通成员</span>
+      <h3>日报反向更新项目</h3>
+      <p>小张下班前说一句"今天完成了竞品调研",任务自动标 done,日报自动填好。</p>
+      <div class="uc-flow">
+        <strong>"今天完成了竞品调研,开始做渠道方案"</strong><br>
+        --> 任务标 done + 任务移到 Doing + 生成日报 + 提交
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">HR</span>
+      <h3>员工画像查询</h3>
+      <p>赵经理想了解小王的情况,AI 从项目、会议、日报三个系统汇聚数据,一句话呈现。</p>
+      <div class="uc-flow">
+        <strong>"小王最近表现怎么样?"</strong><br>
+        --> AI: 任务完成率 91% / 会议参与 88% / 日报提交 96% / 能力标签 / 绩效参考
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">部门负责人</span>
+      <h3>周报自动生成</h3>
+      <p>周五下午,李总监问一句部门周报。AI 聚合本周所有日报,提取亮点和问题。</p>
+      <div class="uc-flow">
+        <strong>"我们部门这周周报"</strong><br>
+        --> AI: 完成 34 项任务 / 提交率 93% / 亮点 / 问题 / 下周重点
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">普通成员</span>
+      <h3>AI 拒绝无效会议</h3>
+      <p>小李想约个会同步进度,AI 说"不需要开会,发条消息就行"。少开一个会。</p>
+      <div class="uc-flow">
+        <strong>"要不要开会同步一下调研进度?"</strong><br>
+        --> AI: "不需要,看板上已有最新状态。帮你发条消息?"
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">HR</span>
+      <h3>季度人才盘点</h3>
+      <p>季末,HR 要做人才盘点。AI 汇聚全部门数据,自动分层,生成报告。</p>
+      <div class="uc-flow">
+        <strong>"出一份技术部的人才盘点"</strong><br>
+        --> AI: 25 人 / A 类 4 人 / B 类 17 人 / C 类 4 人 / 晋升建议 / 一对一建议
+      </div>
+    </div>
+    <div class="uc-card">
+      <span class="uc-role">管理员</span>
+      <h3>AI 用量管理</h3>
+      <p>CTO 想看 AI 花了多少钱。AI 按 Skill、按部门拆分,还能一键切换模型降成本。</p>
+      <div class="uc-flow">
+        <strong>"这个月 AI 用了多少?"</strong><br>
+        --> AI: 124 万 token / 3840 元 / 会议纪要占 35% / 建议日报换 MiMo 省 80%
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section class="section">
+  <div class="section-label">OpenClaw Skill</div>
+  <h2>对话即操作</h2>
+  <div class="section-desc">7 个 Skill 覆盖所有操作,不建传统管理后台。</div>
+  <div class="skill-grid">
+    <div class="skill-card">
+      <h4>项目管理</h4>
+      <div class="skill-name">todo-board-admin</div>
+      <p>项目/成员/任务的增删改查</p>
+      <div class="skill-example">"建个项目叫 Q2 营销,把市场部的人都加进去"</div>
+    </div>
+    <div class="skill-card">
+      <h4>会议管理</h4>
+      <div class="skill-name">todo-board-meeting</div>
+      <p>AI 判断是否需要开会、发起会议、生成纪要</p>
+      <div class="skill-example">"Q2 方案要不要开会讨论?" --> AI 判断是否必要</div>
+    </div>
+    <div class="skill-card">
+      <h4>日报周报</h4>
+      <div class="skill-name">todo-board-report</div>
+      <p>从项目数据自动生成日报,反向更新任务</p>
+      <div class="skill-example">"帮我写今天的日报" --> 从项目数据自动生成</div>
+    </div>
+    <div class="skill-card">
+      <h4>通知提醒</h4>
+      <div class="skill-name">todo-board-notify</div>
+      <p>过期提醒、任务分配通知、周报推送</p>
+      <div class="skill-example">每日 9:00 自动检查过期任务,飞书通知</div>
+    </div>
+    <div class="skill-card">
+      <h4>人资画像</h4>
+      <div class="skill-name">todo-board-hr</div>
+      <p>员工画像查询、评估数据汇聚</p>
+      <div class="skill-example">"小王这个人怎么样?" --> 查员工画像</div>
+    </div>
+    <div class="skill-card">
+      <h4>项目文档</h4>
+      <div class="skill-name">todo-board-wiki</div>
+      <p>Wiki 增删改查、会议纪要自动归档</p>
+      <div class="skill-example">"把会议纪要归档到 Q2 项目 Wiki"</div>
+    </div>
+    <div class="skill-card">
+      <h4>AI 基础设施</h4>
+      <div class="skill-name">todo-board-infra</div>
+      <p>用量统计、Key 管理、Skill 管理</p>
+      <div class="skill-example">"这个月 AI 用了多少 token?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- Tech -->
+<section class="section">
+  <div class="section-label">技术选型</div>
+  <h2>简单、可靠、够用</h2>
+  <div class="tech-grid">
+    <div class="tech-item"><div class="label">数据库</div><div class="value">MySQL 8.0</div></div>
+    <div class="tech-item"><div class="label">ORM</div><div class="value">Prisma</div></div>
+    <div class="tech-item"><div class="label">后端</div><div class="value">Node.js + Express</div></div>
+    <div class="tech-item"><div class="label">前端</div><div class="value">Vanilla HTML/CSS/JS</div></div>
+    <div class="tech-item"><div class="label">认证</div><div class="value">JWT + bcrypt</div></div>
+    <div class="tech-item"><div class="label">实时</div><div class="value">Socket.io</div></div>
+    <div class="tech-item"><div class="label">部署</div><div class="value">PM2 + Nginx</div></div>
+    <div class="tech-item"><div class="label">AI 交互</div><div class="value">OpenClaw Skills</div></div>
+  </div>
+</section>
+
+<!-- Boundary -->
+<section class="section">
+  <div class="section-label">边界</div>
+  <h2>做什么,不做什么</h2>
+  <div class="boundary">
+    <div class="boundary-col do">
+      <h3>我们做</h3>
+      <ul class="boundary-list">
+        <li>项目管理</li>
+        <li>会议管理</li>
+        <li>日报/周报</li>
+        <li>人资画像</li>
+        <li>人才评估</li>
+        <li>Wiki 文档</li>
+        <li>AI 基础设施</li>
+        <li>绩效参考数据</li>
+      </ul>
+    </div>
+    <div class="boundary-col no">
+      <h3>不碰,留给 OA</h3>
+      <ul class="boundary-list">
+        <li>流程审批</li>
+        <li>考勤打卡</li>
+        <li>薪酬计算</li>
+        <li>招聘管理</li>
+        <li>合同管理</li>
+        <li>财务系统</li>
+        <li>正式绩效评估</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>TodoBoard v2.0 - 集团数字化底座 / 基于 <a href="https://github.com/openclaw/openclaw" target="_blank">OpenClaw</a> 构建</p>
+</footer>
+
+</body>
+</html>
