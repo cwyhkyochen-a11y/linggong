@@ -41,7 +41,7 @@
 
 ## 宣传页
 
-https://kyochen.art/todoboard/
+https://kyochen.art/linggong/
 
 ## License
 
